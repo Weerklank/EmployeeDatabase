@@ -34,7 +34,8 @@ async function askQuestions() {
             break
         case "View All Employees By Department":
             connection.query(
-                "SELECT department.id, department.name, SUM(role.salary) AS utilized_budget FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id GROUP BY department.id, department.name;", function (err, res) {
+                "SELECT department.id, department.name, SUM(role.salary) AS utilized_budget FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id GROUP BY department.id, department.name;",
+                function (err, res) {
                     if (err) throw err
                     let depts = res
                     return depts
@@ -53,23 +54,41 @@ async function askQuestions() {
         case "View All Employees By Manager":
             break
         case "Add Employee":
-            await prompt([{
-                name: "first_name",
-                message: "What is the first name of the employee?"
-            },
-            {
-                name: "last_name",
-                message: "What is the last name of the employee?"
-            },
-            {
-                name: "role_id",
-                message: "What role does the employee occupy?"
-            },
-            {
-                name: "manager_id",
-                message: "What is the name of this employees manager?"
-            }
-            ])
+            let info = null;
+            get_info("SELECT * from department", async function (result) {
+                info = result;
+                const depts = info.map(x => x.name);
+                console.log(depts)
+                let employee = await prompt([{
+                    type: "input",
+                    name: "first_name",
+                    message: "What is the first name of the employee?"
+                },
+                {
+                    type: "input",
+                    name: "last_name",
+                    message: "What is the last name of the employee?"
+                },
+                {
+                    type: "list",
+                    name: "department",
+                    message: "What department does the employee occupy?",
+                    choices: depts
+                }])
+                let deptObj = info.filter(x => {
+                    return x.name === employee.department
+                })
+                let deptId = deptObj[0].id
+                get_info(`SELECT * from role WHERE department === ${deptId}`, async function (result) {
+                    await prompt(
+                        {
+                            type: "input",
+                            name: "role",
+                            message: "What role does the employee occupy?"
+                        }
+                    )
+                })
+            })
             break
         case "Remove Employee":
             break
@@ -94,6 +113,13 @@ async function askQuestions() {
     }
 }
 
+async function get_info(sql, callback) {
+    connection.query(sql, function (err, res) {
+        if (err) throw err;
+        info = res
+        return callback(info);
+    })
+}
 // class DB {
 //     constructor(connection) {
 //         this.connection = connection;
