@@ -158,12 +158,13 @@ async function addEmployee() {
                         choices: managers
                     })
                     employee["manager_id"] = managerObj.manager
-                    SQL(`INSERT INTO customers (${Object.keys(employee)[0]}, ${Object.keys(employee)[1]}, ${Object.keys(employee)[2]}, ${Object.keys(employee)[3]}) VALUES (${Object.values(employee)[0]}, ${Object.values(employee)[1]}, ${Object.values(employee)[2]}, ${Object.values(employee)[3]})`)
+                    SQL(`INSERT INTO employee (${Object.keys(employee)[0]}, ${Object.keys(employee)[1]}, ${Object.keys(employee)[2]}, ${Object.keys(employee)[3]}) VALUES ('${Object.values(employee)[0]}', '${Object.values(employee)[1]}', ${Object.values(employee)[2]}, ${Object.values(employee)[3]})`, async function(result){
+                        return askQuestions()
+                    })
                 })
             }
         })
     })
-    return askQuestions()
 }
 
 async function viewAllEmployeesByManager() {
@@ -209,9 +210,10 @@ async function removeEmployee() {
             message: "Who would you like to remove?",
             choices: employees
         })
-        connection.query(`DELETE FROM employee WHERE id = ${empId.id}`)
+        SQL(`DELETE FROM employee WHERE id = ${empId.id}`, async function(){
+            return askQuestions()
+        })
     })
-    return askQuestions()
 }
 
 async function updateEmployeeRole() {
@@ -342,8 +344,9 @@ async function addRole() {
             })[0].id
             bits['department_id'] = departmentBit
             role = Object.assign(role, bits)
-            SQL(`INSERT INTO role (title, salary, department_id, manager) VALUES (${role.title}, ${role.salary}, ${role.department_id}, ${role.manager})`)
-            return askQuestions()
+            SQL(`INSERT INTO role (title, salary, department_id, manager) VALUES (${role.title}, ${role.salary}, ${role.department_id}, ${role.manager})`, async function(res){
+                return askQuestions()
+            })
         })
 }
 
@@ -368,15 +371,6 @@ async function removeRole() {
 
 async function viewAllDepartments() {
     connection.query(
-        // `SELECT first.role.title AS Role1, second.role.title AS Role1, 
-        // department.name, SUM(role.salary) AS budget,
-        // FROM role first JOIN role second
-        // ON first.Id = second.Id
-        // AND first.salary = second.salary 
-        // AND first.title = second.title
-        // LEFT JOIN role ON employee.role_id = role.id 
-        // LEFT JOIN department ON role.department_id = department.id
-        // ORDER BY department.name`
         `SELECT department.name, SUM(role.salary) AS budget FROM role LEFT JOIN employee on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id GROUP BY department.name;`,
         function (err, res) {
             if (err) throw err
@@ -390,8 +384,9 @@ async function addDepartment() {
         name: "department",
         message: "What is the name of the new department?"
     })
-    SQL(`INSERT INTO department (name) VALUES (${department.department})`)
-    return askQuestions()
+    SQL(`INSERT INTO department (name) VALUES (${department.department})`, async function(resp){
+        return askQuestions()
+    })
 }
 
 async function removeDepartment() {
@@ -411,7 +406,6 @@ async function removeDepartment() {
             return askQuestions()
         })
     })
-    return askQuestions()
 }
 
 async function exit() {
