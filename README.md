@@ -59,4 +59,4 @@ npm test
 
 ------------------------------------------------------------
 
-If you have any questions, comments, or concerns please open an issue [here](https://github.com/Weerklank/EmployeeDatabase) or contact the owner at [zoe.veggie@gmail.com](mailto:zoe.veggie@gmail.com).
+If you have any questions, comments, or concerns please open an issue [here](https://github.com/Weerklank/EmployeeDatabase) or contact the owner at [zoe.veggie@gmail.com](mailto:echo.vanryn@gmail.com).
